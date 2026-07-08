@@ -6,6 +6,7 @@ import { Calendar, Users, ShieldAlert, CreditCard, ArrowRight, CheckCircle2, Use
 import { Room } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Counter } from "@/components/ui/counter";
+import { DatePicker } from "@/components/ui/date-picker";
 import { formatCurrency, calculateNights } from "@/lib/utils";
 
 interface BookingWidgetProps {
@@ -128,32 +129,18 @@ export default function BookingWidget({ room }: BookingWidgetProps) {
               <form onSubmit={handleNextStep} className="space-y-4">
                 {/* Check In / Out */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="flex flex-col border border-zinc-200 rounded-2xl p-3 focus-within:ring-2 focus-within:ring-terracotta transition-all">
-                    <label className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 mb-1">
-                      Check-In
-                    </label>
-                    <input
-                      type="date"
-                      min={today}
-                      value={checkIn}
-                      onChange={(e) => setCheckIn(e.target.value)}
-                      required
-                      className="text-xs font-semibold bg-transparent text-zinc-950 border-none outline-none focus:ring-0 p-0"
-                    />
-                  </div>
-                  <div className="flex flex-col border border-zinc-200 rounded-2xl p-3 focus-within:ring-2 focus-within:ring-terracotta transition-all">
-                    <label className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 mb-1">
-                      Check-Out
-                    </label>
-                    <input
-                      type="date"
-                      min={checkIn || today}
-                      value={checkOut}
-                      onChange={(e) => setCheckOut(e.target.value)}
-                      required
-                      className="text-xs font-semibold bg-transparent text-zinc-950 border-none outline-none focus:ring-0 p-0"
-                    />
-                  </div>
+                  <DatePicker
+                    label="Check-In"
+                    value={checkIn}
+                    onChange={setCheckIn}
+                    min={today}
+                  />
+                  <DatePicker
+                    label="Check-Out"
+                    value={checkOut}
+                    onChange={setCheckOut}
+                    min={checkIn || today}
+                  />
                 </div>
 
                 {/* Guest counter */}

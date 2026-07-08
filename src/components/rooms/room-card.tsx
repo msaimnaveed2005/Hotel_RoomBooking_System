@@ -13,7 +13,7 @@ interface RoomCardProps {
 }
 
 // Map amenity string to Icon Component
-const amenityIconMap: Record<string, React.ComponentType<any>> = {
+const amenityIconMap: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
   "Wifi": Wifi,
   "Spa Access": SparklesIcon,
   "Mini Bar": WineIcon,
@@ -33,55 +33,55 @@ const amenityIconMap: Record<string, React.ComponentType<any>> = {
   "Courtyard": Trees,
 };
 
-function SparklesIcon(props: any) {
+function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
   );
 }
 
-function WineIcon(props: any) {
+function WineIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M8 22h8"/><path d="M12 11v11"/><path d="M19 12A7 7 0 0 0 5 12v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2Z"/><path d="M12 15v1"/></svg>
   );
 }
 
-function PoolIcon(props: any) {
+function PoolIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M2 6c.6.5 1.2 1 2.5 1C5.8 7 7 5 9.5 5c2.5 0 3.7 2 5 2 1.3 0 2.5-1 2.5-1"/><path d="M2 12c.6.5 1.2 1 2.5 1 1.3 0 2.5-2 5-2 2.5 0 3.7 2 5 2 1.3 0 2.5-1 2.5-1"/><path d="M2 18c.6.5 1.2 1 2.5 1 1.3 0 2.5-2 5-2 2.5 0 3.7 2 5 2 1.3 0 2.5-1 2.5-1"/></svg>
   );
 }
 
-function BeachIcon(props: any) {
+function BeachIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M18 10h-3.5L12 3H9v2L5.5 12h-2L2 20h20Z"/></svg>
   );
 }
 
-function UserIcon(props: any) {
+function UserIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
   );
 }
 
-function FlameIcon(props: any) {
+function FlameIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
   );
 }
 
-function BathIcon(props: any) {
+function BathIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M2 18h20v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2z"/><path d="M2 14h20V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v8z"/></svg>
   );
 }
 
-function MusicIcon(props: any) {
+function MusicIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
   );
 }
 
-function LaptopIcon(props: any) {
+function LaptopIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M2 21h20"/></svg>
   );

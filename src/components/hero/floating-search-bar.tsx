@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Calendar, Users, ArrowRight } from "lucide-react";
 import { Counter } from "@/components/ui/counter";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 
 export default function FloatingSearchBar() {
   const router = useRouter();
@@ -47,37 +48,29 @@ export default function FloatingSearchBar() {
       >
         {/* Check-In */}
         <div className="md:col-span-3 px-4 py-2 border-b md:border-b-0 md:border-r border-zinc-100 flex flex-col justify-center">
-          <label className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 flex items-center gap-1.5 mb-1.5">
-            <Calendar className="w-3.5 h-3.5 text-terracotta" /> Check In
-          </label>
-          <input
-            type="date"
-            min={today}
+          <DatePicker
+            label="Check In"
             value={checkIn}
-            onChange={(e) => {
-              setCheckIn(e.target.value);
+            onChange={(val) => {
+              setCheckIn(val);
               // Auto-advance check-out date if it's before check-in
-              if (checkOut && e.target.value >= checkOut) {
+              if (checkOut && val >= checkOut) {
                 setCheckOut("");
               }
             }}
-            required
-            className="text-sm font-semibold bg-transparent text-zinc-900 border-none outline-none focus:ring-0 focus-visible:outline-none p-0 cursor-pointer w-full"
+            min={today}
+            className="border-none rounded-none p-0 focus-within:ring-0"
           />
         </div>
 
         {/* Check-Out */}
         <div className="md:col-span-3 px-4 py-2 border-b md:border-b-0 md:border-r border-zinc-100 flex flex-col justify-center">
-          <label className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 flex items-center gap-1.5 mb-1.5">
-            <Calendar className="w-3.5 h-3.5 text-terracotta" /> Check Out
-          </label>
-          <input
-            type="date"
-            min={checkIn || today}
+          <DatePicker
+            label="Check Out"
             value={checkOut}
-            onChange={(e) => setCheckOut(e.target.value)}
-            required
-            className="text-sm font-semibold bg-transparent text-zinc-900 border-none outline-none focus:ring-0 focus-visible:outline-none p-0 cursor-pointer w-full"
+            onChange={setCheckOut}
+            min={checkIn || today}
+            className="border-none rounded-none p-0 focus-within:ring-0"
           />
         </div>
 

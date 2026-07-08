@@ -7,6 +7,13 @@ import { bookings, Booking } from "@/lib/mock-data";
 import { formatCurrency, formatDate, cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Badge, type BadgeVariant } from "@/components/ui/badge";
+
+const statusVariantMap: Record<Booking["status"], BadgeVariant> = {
+  Confirmed: "confirmed",
+  Pending: "pending",
+  Cancelled: "cancelled",
+};
 
 interface ManageBookingDialogProps {
   isOpen: boolean;
@@ -156,16 +163,12 @@ export function ManageBookingDialog({ isOpen, onOpenChange }: ManageBookingDialo
                                 </span>
                                 <h4 className="text-base font-bold text-zinc-900">{searchResult.id}</h4>
                               </div>
-                              <span
-                                className={cn(
-                                  "inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold",
-                                  searchResult.status === "Confirmed" && "bg-emerald-50 text-emerald-700 border border-emerald-100",
-                                  searchResult.status === "Pending" && "bg-amber-50 text-amber-700 border border-amber-100",
-                                  searchResult.status === "Cancelled" && "bg-rose-50 text-rose-700 border border-rose-100"
-                                )}
+                              <Badge
+                                variant={statusVariantMap[searchResult.status]}
+                                className="px-3 py-1 text-xs font-semibold"
                               >
                                 {searchResult.status}
-                              </span>
+                              </Badge>
                             </div>
 
                             <hr className="border-zinc-200/60" />

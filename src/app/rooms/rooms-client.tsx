@@ -2,13 +2,14 @@
 
 import * as React from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { SlidersHorizontal, SearchX, Compass, X } from "lucide-react";
+import { SlidersHorizontal, SearchX, Compass, X, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { rooms, Room } from "@/lib/mock-data";
 import RoomCard from "@/components/rooms/room-card";
 import FiltersSidebar from "@/components/rooms/filters-sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/utils";
 
 export default function RoomsClient() {
   const router = useRouter();
@@ -17,6 +18,10 @@ export default function RoomsClient() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = React.useState(false);
   const [filteredRooms, setFilteredRooms] = React.useState<Room[]>(rooms);
+
+  // Read check-in / check-out search params
+  const checkin = searchParams.get("checkin");
+  const checkout = searchParams.get("checkout");
 
   // Sync rooms and mock loading effect on parameter change
   React.useEffect(() => {
@@ -64,6 +69,19 @@ export default function RoomsClient() {
             Our Sanctuaries
           </h1>
         </div>
+
+        {/* Date-range banner when checkin/checkout params are present */}
+        {checkin && checkout && (
+          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-terracotta/5 border border-terracotta/15 rounded-full text-sm text-terracotta font-medium">
+            <Calendar className="w-4 h-4" />
+            <span>
+              Showing availability for{" "}
+              <span className="font-bold">{formatDate(checkin)}</span>
+              {" – "}
+              <span className="font-bold">{formatDate(checkout)}</span>
+            </span>
+          </div>
+        )}
         <div className="flex items-center gap-4">
           <p className="text-sm text-text-secondary">
             Showing <span className="font-bold text-zinc-900">{filteredRooms.length}</span> rooms

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Shield, ArrowRight } from "lucide-react";
+import { Shield } from "lucide-react";
+import NewsletterForm from "@/components/layout/newsletter-form";
 
 export default function Footer() {
   return (
@@ -53,8 +54,8 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <Link href="/#offers" className="hover:text-white transition-colors focus-ring rounded">
-                Exclusive Offers
+              <Link href="/#testimonials" className="hover:text-white transition-colors focus-ring rounded">
+                Guest Testimonials
               </Link>
             </li>
             <li>
@@ -95,19 +96,7 @@ export default function Footer() {
           <p className="text-xs text-zinc-500 mb-4 leading-relaxed">
             Subscribe to receive curated invitations, culinary updates, and wellness insights.
           </p>
-          <div className="relative">
-            <input
-              type="email"
-              placeholder="Email address"
-              className="w-full h-11 bg-zinc-900 border border-zinc-800 rounded-full pl-4 pr-12 text-sm text-white placeholder-zinc-500 focus-ring"
-            />
-            <button
-              aria-label="Subscribe"
-              className="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-terracotta text-white flex items-center justify-center hover:opacity-90 active:scale-95 transition-all focus-ring cursor-pointer"
-            >
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
+          <NewsletterForm />
         </div>
       </div>
 

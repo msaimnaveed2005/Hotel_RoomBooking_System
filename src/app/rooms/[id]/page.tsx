@@ -103,7 +103,7 @@ export default function RoomDetailPage() {
               {room.description}
             </p>
             <p className="text-sm text-text-secondary leading-relaxed font-sans">
-              Designed under high architectural principles, every detail has been chosen to ground your stay. Organic linen drapery, custom raw woodwork, and premium natural stone materials merge seamlessly. Awake to premium sea breeze or soft forest filters, and let our custom services reset your cadence.
+              {room.fullDescription}
             </p>
           </motion.div>
 
@@ -153,51 +153,29 @@ export default function RoomDetailPage() {
           >
             <h3 className="font-serif text-2xl font-bold text-zinc-950">Guest Journals</h3>
             <div className="space-y-6">
-              {/* Review 1 */}
-              <div className="p-6 bg-zinc-50 border border-zinc-150 rounded-3xl space-y-3">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-forest text-white text-[10px] font-bold flex items-center justify-center">
-                      AA
+              {room.reviews?.map((review, idx) => (
+                <div key={idx} className="p-6 bg-zinc-50 border border-zinc-150 rounded-3xl space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-forest text-white text-[10px] font-bold flex items-center justify-center">
+                        {review.name.split(" ").map(n => n[0]).join("")}
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-zinc-900">{review.name}</h4>
+                        <p className="text-[9px] text-text-secondary">{review.location}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-zinc-900">Adrienne Astley</h4>
-                      <p className="text-[9px] text-text-secondary">Stayed June 2026</p>
-                    </div>
+                    <span className="flex gap-0.5">
+                      {[...Array(review.rating)].map((_, i) => (
+                        <Star key={i} className="w-3 h-3 fill-terracotta text-terracotta" />
+                      ))}
+                    </span>
                   </div>
-                  <span className="flex gap-0.5">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-3 h-3 fill-terracotta text-terracotta" />
-                    ))}
-                  </span>
+                  <p className="text-xs italic leading-relaxed text-zinc-700 font-serif">
+                    "{review.text}"
+                  </p>
                 </div>
-                <p className="text-xs italic leading-relaxed text-zinc-700 font-serif">
-                  "The architecture of the garden suite is stunning. Waking up to private courtyard trees and having a personal therapist arrange volcanic mud treatments at the spa was unforgettable."
-                </p>
-              </div>
-
-              {/* Review 2 */}
-              <div className="p-6 bg-zinc-50 border border-zinc-150 rounded-3xl space-y-3">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-forest text-white text-[10px] font-bold flex items-center justify-center">
-                      MK
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-zinc-900">Marcus Kaelen</h4>
-                      <p className="text-[9px] text-text-secondary">Stayed May 2026</p>
-                    </div>
-                  </div>
-                  <span className="flex gap-0.5">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-3 h-3 fill-terracotta text-terracotta" />
-                    ))}
-                  </span>
-                </div>
-                <p className="text-xs italic leading-relaxed text-zinc-700 font-serif">
-                  "This sanctuary is in a class of its own. Complete layout transition, high privacy controls, and a pristine ocean breeze. Highly recommend the butler dining experience."
-                </p>
-              </div>
+              ))}
             </div>
           </motion.div>
         </div>

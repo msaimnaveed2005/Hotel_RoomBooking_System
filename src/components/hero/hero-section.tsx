@@ -97,7 +97,7 @@ export default function HeroSection() {
           </motion.div>
 
           {/* Right Column: 3D Spline Placeholder */}
-          <div className="hidden lg:block lg:col-span-5 relative">
+          <div className="w-full lg:col-span-5 relative mt-8 lg:mt-0">
             <SplinePlaceholder />
           </div>
         </div>

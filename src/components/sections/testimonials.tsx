@@ -22,14 +22,14 @@ const reviews = [
     name: "Suki Yamamoto",
     location: "Tokyo, Japan",
     rating: 5,
-    quote: "Every corner of this sanctuary feels deliberate and artistic. The garden suite felt like a private botanical oasis. The gastromony is world-class. We will certainly return every season.",
+    quote: "Every corner of this sanctuary feels deliberate and artistic. The garden suite felt like a private botanical oasis. The gastronomy is world-class. We will certainly return every season.",
     initials: "SY",
   },
 ];
 
 export default function Testimonials() {
   return (
-    <section id="offers" className="py-24 bg-white border-b border-zinc-150/40">
+    <section id="testimonials" className="py-24 bg-white border-b border-zinc-150/40">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex flex-col items-center text-center max-w-xl mx-auto mb-16 space-y-3">
           <span className="text-xs uppercase font-bold tracking-widest text-terracotta block">

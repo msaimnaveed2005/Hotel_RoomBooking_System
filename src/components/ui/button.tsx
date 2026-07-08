@@ -33,7 +33,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           size === "lg" && "px-8 py-4 text-base h-[54px]",
           className
         )}
-        {...(props as any)}
+        {...props}
       >
         {children}
       </motion.button>

@@ -29,7 +29,7 @@ export default function Navbar() {
   const navLinks = [
     { name: "Rooms", href: "/rooms" },
     { name: "Amenities", href: "/#amenities" },
-    { name: "Offers", href: "/#offers" },
+    { name: "Testimonials", href: "/#testimonials" },
   ];
 
   const handleLinkClick = (href: string) => {

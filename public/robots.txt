@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aetheria.com/sitemap.xml
+
+# Disallow admin and auth pages from indexing
+Disallow: /admin
+Disallow: /login
+Disallow: /signup
+Disallow: /my-bookings
+Disallow: /api/

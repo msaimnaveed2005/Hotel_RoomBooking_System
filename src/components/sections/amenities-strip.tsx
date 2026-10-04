@@ -58,7 +58,7 @@ export default function AmenitiesStrip() {
               <h3 className="font-serif text-lg font-bold text-zinc-900 mb-3">
                 {item.title}
               </h3>
-              <p className="text-xs text-text-secondary leading-relaxed">
+              <p className="text-sm text-text-secondary leading-relaxed">
                 {item.desc}
               </p>
             </motion.div>

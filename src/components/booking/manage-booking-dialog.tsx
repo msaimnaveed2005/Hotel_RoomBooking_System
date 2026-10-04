@@ -1,250 +1,244 @@
 "use client";
 
 import * as React from "react";
-import * as Dialog from "@radix-ui/react-dialog";
-import { X, Search, Calendar, CreditCard, User, Landmark, ShieldCheck } from "lucide-react";
-import { bookings, Booking } from "@/lib/mock-data";
-import { formatCurrency, formatDate, cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
+import { X, Search, Calendar, Users, Home } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Badge, type BadgeVariant } from "@/components/ui/badge";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { useBookingLookup } from "@/lib/hooks/use-bookings";
+import { useToast } from "@/components/ui/toast";
 
-const statusVariantMap: Record<Booking["status"], BadgeVariant> = {
-  Confirmed: "confirmed",
-  Pending: "pending",
-  Cancelled: "cancelled",
-};
-
-interface ManageBookingDialogProps {
+export function ManageBookingDialog({
+  isOpen,
+  onClose,
+}: {
   isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-export function ManageBookingDialog({ isOpen, onOpenChange }: ManageBookingDialogProps) {
-  const [code, setCode] = React.useState("");
-  const [searchResult, setSearchResult] = React.useState<Booking | null | undefined>(undefined);
-  const [hasSearched, setHasSearched] = React.useState(false);
+  onClose: () => void;
+}) {
+  const { showToast } = useToast();
+  const [searchInput, setSearchInput] = React.useState("");
+  const [activeCode, setActiveCode] = React.useState("");
+  
+  // Use our custom hook to fetch booking details.
+  // The hook will trigger a fetch whenever activeCode changes and isn't empty.
+  const { booking: foundBooking, isLoading, error } = useBookingLookup(activeCode);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!code.trim()) return;
+    if (!searchInput.trim()) return;
+    setActiveCode(searchInput.trim().toUpperCase());
+  };
 
-    // Simulated lookup
-    const found = bookings.find(
-      (b) => b.id.toLowerCase() === code.trim().toLowerCase()
-    );
-
-    if (found) {
-      setSearchResult(found);
-    } else {
-      // Mock: If it starts with HTL and not found in standard mock, make up one
-      if (code.toUpperCase().startsWith("HTL")) {
-        setSearchResult({
-          id: code.toUpperCase(),
-          roomId: "1",
-          roomName: "Serene Garden Suite",
-          guestName: "Valued Guest",
-          checkIn: "2026-08-15",
-          checkOut: "2026-08-18",
-          status: "Confirmed",
-          totalAmount: 1050,
-        });
-      } else {
-        setSearchResult(null);
-      }
+  // Reset state when modal is closed
+  React.useEffect(() => {
+    if (!isOpen) {
+      setSearchInput("");
+      setActiveCode("");
     }
-    setHasSearched(true);
-  };
+  }, [isOpen]);
 
-  const handleClose = () => {
-    onOpenChange(false);
-    // Reset state after dialog closes (animation delay)
-    setTimeout(() => {
-      setCode("");
-      setSearchResult(undefined);
-      setHasSearched(false);
-    }, 200);
-  };
+  // Lock body scroll when modal is open
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
+  // Focus trap: keep focus within dialog
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const modal = document.getElementById("manage-booking-dialog");
+      if (!modal) return;
+      const focusable = modal.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(open) => (open ? onOpenChange(true) : handleClose())}>
-      <AnimatePresence>
-        {isOpen && (
-          <Dialog.Portal forceMount>
-            {/* Backdrop */}
-            <Dialog.Overlay asChild>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
-              />
-            </Dialog.Overlay>
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-zinc-900/40 backdrop-blur-sm z-50"
+          />
 
-            {/* Content Container */}
-            <Dialog.Content asChild>
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: 15 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: 15 }}
-                  transition={{ type: "spring", damping: 25, stiffness: 350 }}
-                  className="w-full max-w-lg overflow-hidden rounded-3xl bg-bg-card shadow-2xl border border-zinc-100 flex flex-col focus-visible:outline-none"
+          {/* Modal Container */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 pointer-events-none">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col max-h-[90vh]"
+              id="manage-booking-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="manage-booking-title"
+            >
+              {/* Header */}
+              <div className="flex justify-between items-center p-6 border-b border-zinc-100">
+                <h2 id="manage-booking-title" className="font-serif text-2xl font-bold text-zinc-950">
+                  Manage Booking
+                </h2>
+                <button
+                  onClick={onClose}
+                  className="p-2 rounded-full text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 transition-colors focus-ring"
                 >
-                  {/* Header */}
-                  <div className="relative p-6 md:p-8 border-b border-zinc-100">
-                    <Dialog.Title className="font-serif text-2xl text-zinc-900 leading-none">
-                      Manage Your Reservation
-                    </Dialog.Title>
-                    <Dialog.Description className="mt-2 text-sm text-text-secondary">
-                      Retrieve detailed invoices, modify booking dates, or request cancellation support.
-                    </Dialog.Description>
-                    <Dialog.Close asChild>
-                      <button
-                        aria-label="Close"
-                        className="absolute right-6 top-6 p-2 rounded-full text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors focus-ring"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    </Dialog.Close>
-                  </div>
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-                  {/* Body */}
-                  <div className="p-6 md:p-8 overflow-y-auto max-h-[70vh]">
-                    <form onSubmit={handleSearch} className="flex gap-2">
-                      <div className="relative flex-grow">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                        <input
-                          type="text"
-                          value={code}
-                          onChange={(e) => setCode(e.target.value)}
-                          placeholder="Reservation Number (e.g. HTL-94021)"
-                          className="w-full h-11 pl-11 pr-4 rounded-full border border-zinc-200 bg-zinc-50 text-sm focus-ring placeholder-zinc-400 transition-premium"
-                        />
+              {/* Content body - scrollable */}
+              <div className="p-6 overflow-y-auto no-scrollbar">
+                <form onSubmit={handleSearch} className="mb-8">
+                  <label className="text-xs font-semibold text-zinc-600 block mb-2">
+                    Enter Confirmation Code
+                  </label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-grow">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Search className="h-4 w-4 text-zinc-400" />
                       </div>
-                      <Button type="submit" variant="primary" className="h-11 rounded-full px-5">
-                        Lookup
-                      </Button>
-                    </form>
+                      <input
+                        type="text"
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
+                        placeholder="e.g. HTL-12345"
+                        className="w-full pl-10 pr-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-terracotta/20 focus:border-terracotta transition-all uppercase"
+                      />
+                    </div>
+                    <Button type="submit" variant="primary" disabled={isLoading} className="shrink-0 px-6">
+                      {isLoading ? "Searching..." : "Find"}
+                    </Button>
+                  </div>
+                  {error && (
+                    <p className="text-xs text-rose-600 font-medium mt-2 flex items-center gap-1">
+                      <span className="w-1 h-1 rounded-full bg-rose-600 inline-block" />
+                      {error.message || "Booking not found"}
+                    </p>
+                  )}
+                </form>
 
-                    {/* Results Display */}
-                    <div className="mt-6">
-                      {searchResult === undefined && !hasSearched && (
-                        <div className="py-8 text-center text-zinc-400">
-                          <Landmark className="w-12 h-12 mx-auto stroke-[1.25] text-zinc-300 mb-3" />
-                          <p className="text-sm">Enter your booking code starting with "HTL" to load details.</p>
-                        </div>
-                      )}
-
-                      {searchResult === null && hasSearched && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="py-8 text-center rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/50"
-                        >
-                          <p className="text-sm font-medium text-zinc-800">No Booking Found</p>
-                          <p className="text-xs text-text-secondary mt-1 px-4">
-                            We couldn't locate a reservation under "{code}". Please verify the code (must start with HTL) and try again.
+                {/* Results Area */}
+                <AnimatePresence mode="wait">
+                  {foundBooking && !isLoading && !error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="bg-zinc-50 border border-zinc-200 rounded-2xl p-5 space-y-4"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-[10px] uppercase font-bold tracking-wider text-zinc-500 mb-1">
+                            Confirmation Code
                           </p>
-                        </motion.div>
-                      )}
+                          <p className="font-mono font-bold text-zinc-900 text-lg">
+                            {foundBooking.confirmation_code}
+                          </p>
+                        </div>
+                        <Badge variant={foundBooking.status.toLowerCase() as any}>
+                          {foundBooking.status}
+                        </Badge>
+                      </div>
 
-                      {searchResult && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="space-y-4"
-                        >
-                          <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-100 space-y-3">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                                  Confirmation
-                                </span>
-                                <h4 className="text-base font-bold text-zinc-900">{searchResult.id}</h4>
-                              </div>
-                              <Badge
-                                variant={statusVariantMap[searchResult.status]}
-                                className="px-3 py-1 text-xs font-semibold"
-                              >
-                                {searchResult.status}
-                              </Badge>
-                            </div>
+                      <hr className="border-zinc-200" />
 
-                            <hr className="border-zinc-200/60" />
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="space-y-1">
+                          <p className="text-zinc-500 flex items-center gap-1.5 text-xs">
+                            <Home className="w-3.5 h-3.5" /> Suite
+                          </p>
+                          <p className="font-semibold text-zinc-900">
+                            {foundBooking.room_type?.name}
+                          </p>
+                          <p className="text-xs text-zinc-500 line-clamp-1">{foundBooking.hotel?.displayName || foundBooking.hotel?.display_name || "Sanctuary Property"}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-zinc-500 flex items-center gap-1.5 text-xs">
+                            <Users className="w-3.5 h-3.5" /> Guest
+                          </p>
+                          <p className="font-semibold text-zinc-900">
+                            {foundBooking.guest_name}
+                          </p>
+                        </div>
+                        <div className="space-y-1 col-span-2">
+                          <p className="text-zinc-500 flex items-center gap-1.5 text-xs">
+                            <Calendar className="w-3.5 h-3.5" /> Dates
+                          </p>
+                          <p className="font-semibold text-zinc-900">
+                            {formatDate(foundBooking.check_in)} — {formatDate(foundBooking.check_out)}
+                          </p>
+                        </div>
+                      </div>
 
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <span className="flex items-center gap-1.5 text-xs text-text-secondary mb-1">
-                                  <User className="w-3.5 h-3.5" /> Guest
-                                </span>
-                                <p className="font-medium text-zinc-800">{searchResult.guestName}</p>
-                              </div>
-                              <div>
-                                <span className="flex items-center gap-1.5 text-xs text-text-secondary mb-1">
-                                  <ShieldCheck className="w-3.5 h-3.5" /> Accommodation
-                                </span>
-                                <p className="font-medium text-zinc-800 truncate">{searchResult.roomName}</p>
-                              </div>
-                              <div>
-                                <span className="flex items-center gap-1.5 text-xs text-text-secondary mb-1">
-                                  <Calendar className="w-3.5 h-3.5" /> Check-in
-                                </span>
-                                <p className="font-medium text-zinc-800">{formatDate(searchResult.checkIn)}</p>
-                              </div>
-                              <div>
-                                <span className="flex items-center gap-1.5 text-xs text-text-secondary mb-1">
-                                  <Calendar className="w-3.5 h-3.5" /> Check-out
-                                </span>
-                                <p className="font-medium text-zinc-800">{formatDate(searchResult.checkOut)}</p>
-                              </div>
-                            </div>
+                      <div className="bg-white rounded-xl p-3 flex justify-between items-center border border-zinc-100">
+                        <span className="text-xs font-semibold text-zinc-600">Total Amount</span>
+                        <span className="font-bold text-terracotta">{formatCurrency(foundBooking.total_amount)}</span>
+                      </div>
 
-                            <hr className="border-zinc-200/60" />
-
-                            <div className="flex justify-between items-center pt-1">
-                              <span className="flex items-center gap-1.5 text-xs text-text-secondary">
-                                <CreditCard className="w-3.5 h-3.5" /> Paid Amount
-                              </span>
-                              <span className="text-base font-bold text-zinc-950">
-                                {formatCurrency(searchResult.totalAmount)}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              onClick={() => alert("Modification request sent! Our staff will email you shortly.")}
-                              className="flex-1 text-xs rounded-xl"
+                      <div className="pt-2 flex gap-2">
+                        {foundBooking.status === "Confirmed" || foundBooking.status === "Pending" ? (
+                          <>
+                            <Button 
+                              variant="outline" 
+                              className="flex-1 text-xs py-2 h-auto" 
+                              onClick={() => showToast("Date modification request submitted to concierge", "info")}
                             >
                               Modify Dates
                             </Button>
-                            {searchResult.status !== "Cancelled" && (
-                              <Button
-                                variant="ghost"
-                                onClick={() => {
-                                  if (confirm("Are you sure you want to cancel this booking?")) {
-                                    alert("Cancellation initiated. Check your email for status update.");
-                                    handleClose();
-                                  }
-                                }}
-                                className="flex-1 text-xs rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700"
-                              >
-                                Cancel Stay
-                              </Button>
-                            )}
-                          </div>
-                        </motion.div>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
+                            <Button 
+                              variant="outline" 
+                              className="flex-1 text-xs py-2 h-auto text-rose-600 border-rose-200 hover:bg-rose-50 hover:border-rose-300"
+                              onClick={() => showToast("Cancellation request initiated. Check email for details.", "error")}
+                            >
+                              Cancel Stay
+                            </Button>
+                          </>
+                        ) : (
+                          <Button variant="outline" className="w-full text-xs py-2 h-auto" disabled>
+                            Booking is {foundBooking.status}
+                          </Button>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-            </Dialog.Content>
-          </Dialog.Portal>
-        )}
-      </AnimatePresence>
-    </Dialog.Root>
+            </motion.div>
+          </div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }

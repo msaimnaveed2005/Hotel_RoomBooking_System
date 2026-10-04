@@ -1,13 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { type Booking } from "@/lib/mock-data";
+import { type Booking, type BookingWithDetails } from "@/lib/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Badge, type BadgeVariant } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface BookingsTableProps {
-  bookings: Booking[];
+  bookings: (Booking | BookingWithDetails | any)[];
   isLoading: boolean;
 }
 
@@ -79,21 +79,23 @@ export function BookingsTable({ bookings, isLoading }: BookingsTableProps) {
                     key={booking.id}
                     className="hover:bg-zinc-50/50 transition-colors"
                   >
-                    <td className="p-4 pl-6 font-bold text-zinc-500">
-                      {booking.id}
+                    <td className="p-4 pl-6 font-mono font-bold text-zinc-600 text-xs">
+                      {booking.confirmation_code || booking.id?.slice(0, 8)}
                     </td>
                     <td className="p-4 font-semibold text-zinc-900">
-                      {booking.guestName}
+                      {booking.guest_name || booking.guestName || "Guest"}
                     </td>
-                    <td className="p-4 text-zinc-700">{booking.roomName}</td>
-                    <td className="p-4 text-zinc-600">
-                      {formatDate(booking.checkIn)}
+                    <td className="p-4 text-zinc-700">
+                      {booking.room_type?.name || booking.roomName || "Sanctuary Suite"}
                     </td>
                     <td className="p-4 text-zinc-600">
-                      {formatDate(booking.checkOut)}
+                      {formatDate(booking.check_in || booking.checkIn)}
+                    </td>
+                    <td className="p-4 text-zinc-600">
+                      {formatDate(booking.check_out || booking.checkOut)}
                     </td>
                     <td className="p-4 font-bold text-zinc-900">
-                      {formatCurrency(booking.totalAmount)}
+                      {formatCurrency(booking.total_amount ?? booking.totalAmount ?? 0)}
                     </td>
                     <td className="p-4 pr-6">
                       <Badge

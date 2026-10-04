@@ -19,21 +19,27 @@ export default function Footer() {
           </p>
           <div className="flex items-center gap-4 pt-2">
             <a
-              href="#"
+              href="https://instagram.com"
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-10 h-10 rounded-full border border-zinc-800 flex items-center justify-center hover:bg-zinc-900 hover:text-white transition-colors focus-ring"
               aria-label="Instagram"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
             </a>
             <a
-              href="#"
+              href="https://facebook.com"
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-10 h-10 rounded-full border border-zinc-800 flex items-center justify-center hover:bg-zinc-900 hover:text-white transition-colors focus-ring"
               aria-label="Facebook"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
             </a>
             <a
-              href="#"
+              href="https://twitter.com"
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-10 h-10 rounded-full border border-zinc-800 flex items-center justify-center hover:bg-zinc-900 hover:text-white transition-colors focus-ring"
               aria-label="Twitter"
             >
@@ -49,17 +55,17 @@ export default function Footer() {
           </h4>
           <ul className="space-y-4 text-sm">
             <li>
-              <Link href="/rooms" className="hover:text-white transition-colors focus-ring rounded">
-                Our Rooms
+              <Link href="/hotels" className="hover:text-white transition-colors focus-ring rounded">
+                All Accommodations
               </Link>
             </li>
             <li>
-              <Link href="/#testimonials" className="hover:text-white transition-colors focus-ring rounded">
+              <Link href="/testimonials" className="hover:text-white transition-colors focus-ring rounded">
                 Guest Testimonials
               </Link>
             </li>
             <li>
-              <Link href="/#amenities" className="hover:text-white transition-colors focus-ring rounded">
+              <Link href="/amenities" className="hover:text-white transition-colors focus-ring rounded">
                 Wellness & Spa
               </Link>
             </li>
@@ -72,19 +78,19 @@ export default function Footer() {
           </h4>
           <ul className="space-y-4 text-sm">
             <li>
-              <a href="#" className="hover:text-white transition-colors focus-ring rounded">
+              <Link href="/amenities" className="hover:text-white transition-colors focus-ring rounded">
                 Our Vision
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-white transition-colors focus-ring rounded">
+              <Link href="/amenities" className="hover:text-white transition-colors focus-ring rounded">
                 Art & Spaces
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-white transition-colors focus-ring rounded">
+              <Link href="/amenities" className="hover:text-white transition-colors focus-ring rounded">
                 Private Dining
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
@@ -105,14 +111,14 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
           <p>© {new Date().getFullYear()} Aetheria Resorts. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <a href="#" className="hover:text-zinc-400 transition-colors focus-ring rounded">
+            <span className="hover:text-zinc-300 transition-colors cursor-pointer" title="Guest privacy is rigorously protected under GDPR and local hospitality standards.">
               Privacy Policy
-            </a>
-            <a href="#" className="hover:text-zinc-400 transition-colors focus-ring rounded">
+            </span>
+            <span className="hover:text-zinc-300 transition-colors cursor-pointer" title="Direct reservations include transparent cancellation policies and resort fee disclosures.">
               Terms of Use
-            </a>
+            </span>
             <span className="flex items-center gap-1">
-              <Shield className="w-3.5 h-3.5 text-zinc-650" /> Safe Stay Certified
+              <Shield className="w-3.5 h-3.5 text-emerald-500" /> Safe Stay Certified
             </span>
           </div>
         </div>

@@ -1,5 +1,4 @@
 @import "tailwindcss";
-
 @theme {
   --color-bg-main: var(--bg-main);
   --color-bg-card: var(--bg-card);
@@ -7,6 +6,9 @@
   --color-text-secondary: var(--text-secondary);
   --color-terracotta: var(--accent-terracotta);
   --color-forest: var(--accent-forest);
+  --color-zinc-150: #e9e9ed;
+  --color-zinc-650: #5b5b66;
+  --color-zinc-850: #27272c;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-playfair), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 }

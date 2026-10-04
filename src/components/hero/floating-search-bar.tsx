@@ -1,128 +1,110 @@
 "use client";
 
-import * as React from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, Users, ArrowRight } from "lucide-react";
-import { Counter } from "@/components/ui/counter";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
+import { Counter } from "@/components/ui/counter";
+import { Search, MapPin } from "lucide-react";
+import { addDaysToDateInput, getDateInputValue } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 export default function FloatingSearchBar() {
   const router = useRouter();
-  
-  // Default values
-  const today = new Date().toISOString().split("T")[0];
-  const [checkIn, setCheckIn] = React.useState("");
-  const [checkOut, setCheckOut] = React.useState("");
-  const [guests, setGuests] = React.useState(1);
-  const [isGuestsOpen, setIsGuestsOpen] = React.useState(false);
-  
-  const guestsRef = React.useRef<HTMLDivElement>(null);
-
-  // Close guest dropdown when clicking outside
-  React.useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (guestsRef.current && !guestsRef.current.contains(event.target as Node)) {
-        setIsGuestsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const today = getDateInputValue();
+  const [location, setLocation] = useState("Islamabad, Pakistan");
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [guests, setGuests] = useState(1);
+  const checkoutMin = checkIn ? addDaysToDateInput(checkIn, 1) : today;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const query = new URLSearchParams();
-    if (checkIn) query.append("checkin", checkIn);
-    if (checkOut) query.append("checkout", checkOut);
-    query.append("guests", guests.toString());
-
-    router.push(`/rooms?${query.toString()}`);
+    const params = new URLSearchParams();
+    if (checkIn) params.append("checkin", checkIn);
+    if (checkOut) params.append("checkout", checkOut);
+    if (guests > 1) params.append("guests", guests.toString());
+    
+    router.push(`/hotels?${params.toString()}`);
   };
 
   return (
-    <div className="w-full relative z-35">
-      <form
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, delay: 0.4 }}
+      className="relative w-full max-w-5xl mx-auto z-30"
+    >
+      <form 
         onSubmit={handleSearch}
-        className="w-full bg-white rounded-3xl md:rounded-full border border-zinc-150 p-3 md:p-2 shadow-[0_15px_40px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] transition-all duration-500 grid grid-cols-1 md:grid-cols-12 gap-2 items-center"
+        className="bg-white/95 backdrop-blur-xl border border-white/80 p-4 sm:p-5 md:p-6 rounded-3xl md:rounded-[2rem] shadow-xl md:shadow-2xl shadow-zinc-900/10 flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-6"
       >
-        {/* Check-In */}
-        <div className="md:col-span-3 px-4 py-2 border-b md:border-b-0 md:border-r border-zinc-100 flex flex-col justify-center">
-          <DatePicker
-            label="Check In"
-            value={checkIn}
-            onChange={(val) => {
-              setCheckIn(val);
-              // Auto-advance check-out date if it's before check-in
-              if (checkOut && val >= checkOut) {
-                setCheckOut("");
-              }
-            }}
-            min={today}
-            className="border-none rounded-none p-0 focus-within:ring-0"
-          />
-        </div>
-
-        {/* Check-Out */}
-        <div className="md:col-span-3 px-4 py-2 border-b md:border-b-0 md:border-r border-zinc-100 flex flex-col justify-center">
-          <DatePicker
-            label="Check Out"
-            value={checkOut}
-            onChange={setCheckOut}
-            min={checkIn || today}
-            className="border-none rounded-none p-0 focus-within:ring-0"
-          />
-        </div>
-
-        {/* Guests Select */}
-        <div
-          ref={guestsRef}
-          className="md:col-span-3 px-4 py-2 relative flex flex-col justify-center cursor-pointer border-b md:border-b-0 border-zinc-100 md:border-none"
-          onClick={() => setIsGuestsOpen(!isGuestsOpen)}
-        >
-          <label className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 flex items-center gap-1.5 mb-1.5">
-            <Users className="w-3.5 h-3.5 text-terracotta" /> Occupancy
-          </label>
-          <div className="text-sm font-semibold text-zinc-900 select-none flex justify-between items-center pr-2">
-            <span>
-              {guests} Guest{guests > 1 ? "s" : ""}
-            </span>
+        <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          
+          <div className="flex flex-col px-3 sm:px-4 pb-3 sm:pb-0 border-b sm:border-b-0 sm:border-r border-zinc-200">
+            <label htmlFor="search-location" className="text-[10px] uppercase font-bold tracking-wider text-zinc-500 mb-1 flex items-center gap-1">
+              <MapPin className="w-3 h-3 text-terracotta" /> Location
+            </label>
+            <input 
+              id="search-location"
+              type="text" 
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="bg-transparent border-none outline-none font-semibold text-zinc-900 placeholder:text-zinc-300 p-0 text-sm focus:ring-0"
+              placeholder="Where to?"
+            />
           </div>
 
-          {/* Guest Count Dropdown */}
-          {isGuestsOpen && (
-            <div
-              className="absolute left-0 right-0 md:right-auto md:w-60 top-full mt-3 p-4 bg-white rounded-2xl border border-zinc-150 shadow-xl z-50 space-y-3 cursor-default"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-center">
-                <div>
-                  <h4 className="text-xs font-bold text-zinc-900">Total Guests</h4>
-                  <p className="text-[10px] text-text-secondary">Including children</p>
-                </div>
-                <Counter
-                  value={guests}
-                  onChange={(val) => setGuests(val)}
-                  min={1}
-                  max={6}
-                />
-              </div>
-            </div>
-          )}
+          <div className="flex flex-col px-3 sm:px-4 pb-3 sm:pb-0 border-b sm:border-b-0 md:border-r border-zinc-200">
+            <DatePicker
+              id="hero-checkin"
+              label="Check-In"
+              value={checkIn}
+              onChange={(val) => {
+                setCheckIn(val);
+                if (checkOut && val >= checkOut) {
+                  setCheckOut("");
+                }
+              }}
+              min={today}
+              className="bg-transparent border-none p-0 text-sm font-semibold"
+            />
+          </div>
+
+          <div className="flex flex-col px-3 sm:px-4 pb-3 sm:pb-0 border-b sm:border-b-0 sm:border-r border-zinc-200">
+            <DatePicker
+              id="hero-checkout"
+              label="Check-Out"
+              value={checkOut}
+              onChange={setCheckOut}
+              min={checkoutMin}
+              className="bg-transparent border-none p-0 text-sm font-semibold"
+            />
+          </div>
+
+          <div className="flex flex-col px-3 sm:px-4 justify-center">
+            <label htmlFor="search-guests" className="text-[10px] uppercase font-bold tracking-wider text-zinc-500 mb-1">
+              Guests
+            </label>
+            <Counter 
+              value={guests} 
+              onChange={setGuests} 
+              min={1} 
+              max={10} 
+            />
+          </div>
+
         </div>
 
-        {/* Action Search Button */}
-        <div className="md:col-span-3 p-1 flex justify-end">
-          <Button
-            type="submit"
-            variant="primary"
-            className="w-full md:w-auto h-12 md:h-11 rounded-full px-6 flex items-center justify-center gap-2 group cursor-pointer"
-          >
-            <span>Find Sanctuary</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Button>
-        </div>
+        <Button 
+          type="submit" 
+          variant="primary" 
+          className="w-full md:w-auto h-[3.25rem] rounded-full px-8 shrink-0 flex items-center justify-center gap-2 shadow-lg shadow-terracotta/20 font-semibold"
+        >
+          <Search className="w-4 h-4" />
+          <span>Search Sanctuaries</span>
+        </Button>
       </form>
-    </div>
+    </motion.div>
   );
 }

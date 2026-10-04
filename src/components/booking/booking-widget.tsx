@@ -1,33 +1,40 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Users, ShieldAlert, CreditCard, ArrowRight, CheckCircle2, User, Mail, Sparkles, RefreshCw } from "lucide-react";
-import { Room } from "@/lib/mock-data";
+import { ShieldAlert, CreditCard, ArrowRight, User, Mail, RefreshCw, ChevronDown } from "lucide-react";
+import { Hotel, RoomType } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Counter } from "@/components/ui/counter";
 import { DatePicker } from "@/components/ui/date-picker";
-import { formatCurrency, calculateNights } from "@/lib/utils";
+import { addDaysToDateInput, formatCurrency, calculateNights, getDateInputValue } from "@/lib/utils";
+import { useAuth } from "@/components/auth/auth-provider";
 
 interface BookingWidgetProps {
-  room: Room;
+  hotel: Hotel;
+  roomTypes: RoomType[];
 }
 
 type Step = 1 | 2 | 3;
 
-export default function BookingWidget({ room }: BookingWidgetProps) {
-  const today = new Date().toISOString().split("T")[0];
+export default function BookingWidget({ hotel, roomTypes }: BookingWidgetProps) {
+  const { user } = useAuth();
+  const router = useRouter();
+  const today = getDateInputValue();
   
   // State variables
   const [step, setStep] = React.useState<Step>(1);
   const [checkIn, setCheckIn] = React.useState("");
   const [checkOut, setCheckOut] = React.useState("");
   const [guests, setGuests] = React.useState(1);
-  const [isGuestsOpen, setIsGuestsOpen] = React.useState(false);
+  
+  // Selected Room
+  const [selectedRoomId, setSelectedRoomId] = React.useState<string>(roomTypes[0]?.id || "");
 
   // Guest Details Form State
-  const [guestName, setGuestName] = React.useState("");
-  const [guestEmail, setGuestEmail] = React.useState("");
+  const [guestName, setGuestName] = React.useState(user?.user_metadata?.full_name || "");
+  const [guestEmail, setGuestEmail] = React.useState(user?.email || "");
   const [cardNumber, setCardNumber] = React.useState("");
   const [cardExpiry, setCardExpiry] = React.useState("");
   const [cardCvv, setCardCvv] = React.useState("");
@@ -39,13 +46,18 @@ export default function BookingWidget({ room }: BookingWidgetProps) {
   const [confCode, setConfCode] = React.useState("");
   const [shakeKey, setShakeKey] = React.useState(0);
 
+  const selectedRoom = roomTypes.find(r => r.id === selectedRoomId);
+  const pricePerNight = selectedRoom?.base_rate || 0;
+  const maxGuests = selectedRoom?.capacity || 2;
+
   const nights = calculateNights(checkIn, checkOut);
-  const baseCost = nights * room.pricePerNight;
+  const checkoutMin = checkIn ? addDaysToDateInput(checkIn, 1) : today;
+  const baseCost = nights * pricePerNight;
   const resortTax = Math.round(baseCost * 0.1);
   const totalAmount = baseCost + resortTax;
 
   // Capacity check
-  const isOverCapacity = guests > room.maxGuests;
+  const isOverCapacity = guests > maxGuests;
 
   const validateStep2 = () => {
     const errs: Record<string, string> = {};
@@ -55,7 +67,8 @@ export default function BookingWidget({ room }: BookingWidgetProps) {
     } else if (!/\S+@\S+\.\S+/.test(guestEmail)) {
       errs.guestEmail = "Please enter a valid email.";
     }
-    if (!cardNumber.trim() || cardNumber.length < 16) {
+    const rawCardNumber = cardNumber.replace(/\D/g, "");
+    if (!rawCardNumber || rawCardNumber.length < 16) {
       errs.cardNumber = "Enter a valid 16-digit card number.";
     }
     if (!cardExpiry.trim() || !/^\d{2}\/\d{2}$/.test(cardExpiry)) {
@@ -71,40 +84,56 @@ export default function BookingWidget({ room }: BookingWidgetProps) {
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
     if (step === 1) {
-      if (checkIn && checkOut && nights > 0 && !isOverCapacity) {
+      if (checkIn && checkOut && nights > 0 && !isOverCapacity && selectedRoom) {
         setStep(2);
       }
     }
   };
 
-  const handleConfirmBooking = (e: React.FormEvent) => {
+  const handleConfirmBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmissionError("");
 
     if (!validateStep2()) {
-      // Trigger shake animation by changing key
       setShakeKey((prev) => prev + 1);
       return;
     }
 
     setIsSubmitting(true);
 
-    // Simulate Payment/Reservation Processing
-    setTimeout(() => {
-      // ~10% simulated failure
-      if (Math.random() < 0.15) {
-        setSubmissionError("Something went wrong — please try again.");
-        setIsSubmitting(false);
-        setShakeKey((prev) => prev + 1);
-        return;
+    try {
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          roomTypeId: selectedRoomId,
+          hotelPlaceId: hotel.placeId,
+          guestName,
+          guestEmail,
+          checkIn,
+          checkOut,
+          guests,
+          totalAmount,
+          userId: user?.id || null,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create booking");
       }
 
-      // Generate random confirmation code
-      const code = `HTL-${Math.floor(10000 + Math.random() * 90000)}`;
-      setConfCode(code);
-      setIsSubmitting(false);
+      setConfCode(data.confirmation_code);
       setStep(3);
-    }, 1800);
+    } catch (err) {
+      setSubmissionError(err instanceof Error ? err.message : "Something went wrong.");
+      setShakeKey((prev) => prev + 1);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -123,23 +152,60 @@ export default function BookingWidget({ room }: BookingWidgetProps) {
             >
               <div>
                 <h3 className="font-serif text-xl font-bold text-zinc-950">Book Sanctuary</h3>
-                <p className="text-xs text-text-secondary mt-1">Rates starting from {formatCurrency(room.pricePerNight)} / night</p>
+                {selectedRoom ? (
+                  <p className="text-xs text-text-secondary mt-1">Rates starting from {formatCurrency(selectedRoom.base_rate)} / night</p>
+                ) : (
+                  <p className="text-xs text-text-secondary mt-1 text-amber-600">No rooms available currently.</p>
+                )}
               </div>
 
               <form onSubmit={handleNextStep} className="space-y-4">
+                
+                {/* Room Selection */}
+                {roomTypes.length > 0 && (
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="suite-select" className="text-[10px] uppercase font-bold tracking-wider text-zinc-500">Select Suite</label>
+                    <div className="relative">
+                      <select
+                        id="suite-select"
+                        aria-label="Select room type"
+                        value={selectedRoomId}
+                        onChange={(e) => setSelectedRoomId(e.target.value)}
+                        className="w-full appearance-none bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-medium text-zinc-900 focus:outline-none focus:ring-2 focus:ring-terracotta/20 focus:border-terracotta transition-all pr-10"
+                      >
+                        {roomTypes.map((rt) => (
+                          <option key={rt.id} value={rt.id}>
+                            {rt.name} - {formatCurrency(rt.base_rate)}/night
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+                    </div>
+                  </div>
+                )}
+
                 {/* Check In / Out */}
                 <div className="grid grid-cols-2 gap-3">
                   <DatePicker
+                    id="booking-check-in"
+                    name="checkin"
                     label="Check-In"
                     value={checkIn}
-                    onChange={setCheckIn}
+                    onChange={(val) => {
+                      setCheckIn(val);
+                      if (checkOut && val >= checkOut) {
+                        setCheckOut("");
+                      }
+                    }}
                     min={today}
                   />
                   <DatePicker
+                    id="booking-check-out"
+                    name="checkout"
                     label="Check-Out"
                     value={checkOut}
                     onChange={setCheckOut}
-                    min={checkIn || today}
+                    min={checkoutMin}
                   />
                 </div>
 
@@ -158,7 +224,7 @@ export default function BookingWidget({ room }: BookingWidgetProps) {
                       value={guests}
                       onChange={(val) => setGuests(val)}
                       min={1}
-                      max={6}
+                      max={8}
                     />
                   </div>
 
@@ -169,13 +235,13 @@ export default function BookingWidget({ room }: BookingWidgetProps) {
                       className="flex items-center gap-2 p-2 bg-rose-50 text-rose-700 rounded-xl text-[10px] font-bold border border-rose-100"
                     >
                       <ShieldAlert className="w-4 h-4 shrink-0" />
-                      <span>Exceeds capacity of {room.maxGuests} max guests for this room.</span>
+                      <span>Exceeds capacity of {maxGuests} max guests for this room.</span>
                     </motion.div>
                   )}
                 </div>
 
                 {/* Price Breakdown */}
-                {nights > 0 && !isOverCapacity && (
+                {nights > 0 && !isOverCapacity && selectedRoom && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
@@ -183,7 +249,7 @@ export default function BookingWidget({ room }: BookingWidgetProps) {
                   >
                     <div className="flex justify-between text-zinc-600">
                       <span>
-                        ${room.pricePerNight} x {nights} night{nights > 1 ? "s" : ""}
+                        ${pricePerNight} x {nights} night{nights > 1 ? "s" : ""}
                       </span>
                       <span>{formatCurrency(baseCost)}</span>
                     </div>
@@ -201,13 +267,26 @@ export default function BookingWidget({ room }: BookingWidgetProps) {
 
                 <Button
                   type="submit"
-                  disabled={!checkIn || !checkOut || nights <= 0 || isOverCapacity}
+                  disabled={!checkIn || !checkOut || nights <= 0 || isOverCapacity || !selectedRoom}
                   variant="primary"
-                  className="w-full rounded-full flex items-center justify-center gap-2"
+                  className="w-full rounded-full flex items-center justify-center gap-2 h-[46px]"
                 >
-                  <span>Continue Stay</span>
+                  <span>Continue to Payment</span>
                   <ArrowRight className="w-4 h-4" />
                 </Button>
+
+                {/* Trust signals */}
+                <div className="flex items-center justify-center gap-4 text-[11px] text-zinc-500 mt-2">
+                  <span className="flex items-center gap-1">
+                    <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    Free cancellation within 24h
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <svg className="w-3.5 h-3.5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                    Secure booking
+                  </span>
+                </div>
+
               </form>
             </motion.div>
           )}
@@ -301,10 +380,12 @@ export default function BookingWidget({ room }: BookingWidgetProps) {
                     </label>
                     <input
                       type="text"
-                      maxLength={16}
+                      maxLength={19}
                       value={cardNumber}
                       onChange={(e) => {
-                        setCardNumber(e.target.value.replace(/\D/g, ""));
+                        const digits = e.target.value.replace(/\D/g, "").slice(0, 16);
+                        const formatted = digits.replace(/(\d{4})(?=\d)/g, "$1 ");
+                        setCardNumber(formatted);
                         if (errors.cardNumber) setErrors((prev) => ({ ...prev, cardNumber: "" }));
                       }}
                       placeholder="4000 1234 5678 9010"
@@ -424,7 +505,7 @@ export default function BookingWidget({ room }: BookingWidgetProps) {
                 </span>
                 <h3 className="font-serif text-2xl font-bold text-zinc-950">Stay Confirmed</h3>
                 <p className="text-xs text-text-secondary max-w-sm mx-auto leading-relaxed">
-                  Thank you, {guestName}. We have initialized details for your luxury stay in the {room.name}. A confirmation receipt has been sent to {guestEmail}.
+                  Thank you, {guestName}. We have initialized details for your luxury stay in {selectedRoom?.name}. A confirmation receipt has been sent to {guestEmail}.
                 </p>
               </div>
 
@@ -451,10 +532,10 @@ export default function BookingWidget({ room }: BookingWidgetProps) {
               <div className="pt-2">
                 <Button
                   variant="outline"
-                  onClick={() => window.location.href = "/"}
+                  onClick={() => router.push("/my-bookings")}
                   className="rounded-full px-6"
                 >
-                  Return to Sanctuary Home
+                  View My Bookings
                 </Button>
               </div>
             </motion.div>

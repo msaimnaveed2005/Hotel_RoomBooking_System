@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { cn } from "@/lib/utils";
+import { CalendarDays } from "lucide-react";
+import { cn, getDateInputValue } from "@/lib/utils";
 
 interface DatePickerProps {
   /** Label text displayed above the input */
@@ -18,10 +19,10 @@ interface DatePickerProps {
   className?: string;
   /** Optional id forwarded to the native input */
   id?: string;
-}
-
-function getToday(): string {
-  return new Date().toISOString().split("T")[0];
+  /** Optional name forwarded to the native input for form submission */
+  name?: string;
+  /** Marks the date as required. Defaults to true. */
+  required?: boolean;
 }
 
 export function DatePicker({
@@ -32,32 +33,44 @@ export function DatePicker({
   max,
   className,
   id,
+  name,
+  required = true,
 }: DatePickerProps) {
-  const minDate = min ?? getToday();
+  const generatedId = React.useId();
+  const inputId = id ?? generatedId;
+  const minDate = min ?? getDateInputValue();
 
   return (
     <div
       className={cn(
-        "flex flex-col border border-zinc-200 rounded-2xl p-3 focus-within:ring-2 focus-within:ring-terracotta transition-all",
+        "flex min-w-0 flex-col border border-zinc-200 rounded-2xl p-3 focus-within:ring-2 focus-within:ring-terracotta transition-all",
         className,
       )}
     >
       <label
-        htmlFor={id}
+        htmlFor={inputId}
         className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 mb-1"
       >
         {label}
       </label>
-      <input
-        id={id}
-        type="date"
-        min={minDate}
-        max={max}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required
-        className="text-xs font-semibold bg-transparent text-zinc-950 border-none outline-none focus:ring-0 p-0 cursor-pointer w-full"
-      />
+      <div className="relative min-w-0">
+        <input
+          id={inputId}
+          name={name}
+          type="date"
+          min={minDate}
+          max={max}
+          value={value}
+          onInput={(e) => onChange(e.currentTarget.value)}
+          onChange={(e) => onChange(e.target.value)}
+          required={required}
+          className="w-full min-w-0 bg-transparent p-0 pr-8 text-xs font-semibold text-zinc-950 border-none outline-none cursor-pointer focus:ring-0 [color-scheme:light] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+        />
+        <CalendarDays
+          aria-hidden="true"
+          className="pointer-events-none absolute right-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-500"
+        />
+      </div>
     </div>
   );
 }

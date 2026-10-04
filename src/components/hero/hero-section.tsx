@@ -32,10 +32,12 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="relative pt-12 pb-24 md:py-32 overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-50 via-bg-main to-bg-main">
+    <section className="relative pt-12 pb-20 md:pb-28 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-50 via-bg-main to-bg-main">
       {/* Absolute Decorative Background Elements */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[60%] rounded-full bg-gradient-to-tr from-forest/5 to-transparent blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[50%] rounded-full bg-gradient-to-bl from-terracotta/5 to-transparent blur-[120px] pointer-events-none" />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[60%] rounded-full bg-gradient-to-tr from-forest/5 to-transparent blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[50%] rounded-full bg-gradient-to-bl from-terracotta/5 to-transparent blur-[120px]" />
+      </div>
 
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
@@ -83,7 +85,7 @@ export default function HeroSection() {
               variants={itemVariants}
               className="flex flex-wrap gap-4 w-full sm:w-auto"
             >
-              <Link href="/rooms" className="w-full sm:w-auto">
+              <Link href="/hotels" className="w-full sm:w-auto">
                 <Button variant="primary" size="lg" className="w-full sm:w-auto flex items-center justify-center gap-2 shadow-lg">
                   Explore Accommodations <ArrowRight className="w-4 h-4" />
                 </Button>
@@ -102,8 +104,8 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* Floating Search Bar (overlap at bottom) */}
-        <div className="mt-16 md:mt-24">
+        {/* Floating Search Bar */}
+        <div className="mt-12 md:mt-16 relative z-30">
           <FloatingSearchBar />
         </div>
       </div>
